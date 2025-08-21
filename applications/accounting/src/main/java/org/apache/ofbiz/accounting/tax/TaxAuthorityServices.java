@@ -404,7 +404,8 @@ public class TaxAuthorityServices {
                 }
 
                 // taxRate is in percentage, so needs to be divided by 100
-                BigDecimal taxAmount = (taxable.multiply(taxRate)).divide(PERCENT_SCALE, salestaxCalcDecimals, salestaxRounding);
+                BigDecimal taxAmount = (taxable.multiply(taxRate)).divide(PERCENT_SCALE, salestaxCalcDecimals, salestaxRounding)
+                        .setScale(salestaxFinalDecimals, salestaxRounding);
 
                 String taxAuthGeoId = taxAuthorityRateProduct.getString("taxAuthGeoId");
                 String taxAuthPartyId = taxAuthorityRateProduct.getString("taxAuthPartyId");
