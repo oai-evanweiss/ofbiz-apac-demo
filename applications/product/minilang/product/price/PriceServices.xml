@@ -107,7 +107,7 @@ under the License.
                 <!-- if taxPercentage not passed in look it up based on taxAuthGeoId and taxAuthPartyId -->
                 <if-empty field="parameters.taxPercentage">
                     <!-- we only have basic data to constrain by here, so assume that if it is a VAT tax setup it should be pretty simple -->
-                    <entity-condition entity-name="TaxAuthorityRateProduct" list="taxAuthorityRateProductList" filter-by-date="true">
+                    <entity-condition entity-name="TaxAuthorityRateProduct" list="taxAuthorityRateProductList" order-by="fromDate">
                         <condition-list combine="and">
                             <condition-expr field-name="taxAuthGeoId" from-field="parameters.taxAuthGeoId"/>
                             <condition-expr field-name="taxAuthPartyId" from-field="parameters.taxAuthPartyId"/>
