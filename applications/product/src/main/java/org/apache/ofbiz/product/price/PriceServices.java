@@ -45,7 +45,6 @@ import org.apache.ofbiz.entity.util.EntityUtil;
 import org.apache.ofbiz.entity.util.EntityUtilProperties;
 import org.apache.ofbiz.product.product.ProductWorker;
 import org.apache.ofbiz.service.DispatchContext;
-import org.apache.ofbiz.accounting.tax.TaxPreferences;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
 import org.apache.ofbiz.service.ServiceUtil;
@@ -1313,18 +1312,5 @@ public class PriceServices {
         result.put("validPriceFound", Boolean.valueOf(validPriceFound));
         result.put("orderItemPriceInfos", orderItemPriceInfos);
         return result;
-    }
-
-    public static BigDecimal calcPriceWithTax(DispatchContext dctx, Map<String, ? extends Object> context) {
-        Boolean taxInPrice = (Boolean) context.get("taxInPrice");
-        String geoId = (String) context.get("taxAuthGeoId");
-        boolean inclusive = TaxPreferences.isTaxIncludedForGeo(geoId, taxInPrice);
-
-        BigDecimal base = (BigDecimal) context.get("basePrice");
-        BigDecimal rate = (BigDecimal) context.get("taxPercentage");
-        if (inclusive) {
-            return base.add(base.multiply(rate));
-        }
-        return base.add(base.multiply(rate));
     }
 }
