@@ -151,7 +151,7 @@ under the License.
                     </calcop>
                 </calculate>
 
-                <if-compare field="parameters.taxInPrice" operator="equals" value="N">
+                <if-compare field="parameters.taxInPrice" operator="equals" value="Y">
                     <!-- the price passed in has tax included, and we want to store it with tax included -->
                     <set field="parameters.price" from-field="parameters.priceWithTax"/>
 

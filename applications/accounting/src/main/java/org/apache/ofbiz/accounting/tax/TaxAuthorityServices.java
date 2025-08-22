@@ -469,7 +469,7 @@ public class TaxAuthorityServices {
 
                 BigDecimal discountedSalesTax = BigDecimal.ZERO;
                 taxAdjValue.set("orderAdjustmentTypeId", "SALES_TAX");
-                if (productPrice != null && "Y".equals(productPrice.getString("taxInPrice")) && itemQuantity != BigDecimal.ZERO) {
+                if (productPrice != null && "N".equals(productPrice.getString("taxInPrice")) && itemQuantity != BigDecimal.ZERO) {
                     // For example product price is 43 with 20% VAT(means product actual price is 35.83).
                     // itemPrice = 43;
                     // itemQuantity = 3;
@@ -529,7 +529,7 @@ public class TaxAuthorityServices {
 
                 if (productPrice != null && itemQuantity != null && 
                         productPrice.getBigDecimal("priceWithTax") != null && 
-                        !"Y".equals(productPrice.getString("taxInPrice"))) {
+                        !"N".equals(productPrice.getString("taxInPrice"))) {
                     BigDecimal priceWithTax = productPrice.getBigDecimal("priceWithTax");
                     BigDecimal price = productPrice.getBigDecimal("price");
                     BigDecimal baseSubtotal = price.multiply(itemQuantity);
