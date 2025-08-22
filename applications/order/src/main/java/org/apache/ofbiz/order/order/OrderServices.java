@@ -1636,7 +1636,7 @@ public class OrderServices {
                             products.add(i, EntityQuery.use(delegator).from("Product").where("productId", productId).queryOne());  // get the product entity
                             amounts.add(i, OrderReadHelper.getOrderItemSubTotal(orderItem, allAdjustments, true, false)); // get the item amount
                             shipAmts.add(i, OrderReadHelper.getOrderItemAdjustmentsTotal(orderItem, allAdjustments, false, false, true)); // get the shipping amount
-                            itPrices.add(i, orderItem.getBigDecimal("unitPrice").setScale(taxDecimals, taxRounding));
+                            itPrices.add(i, orderItem.getBigDecimal("unitPrice"));
                             itQuantities.add(i, orderItem.getBigDecimal("quantity"));
                         } catch (GenericEntityException e) {
                             Debug.logError(e, "Cannot read order item entity : " + orderItem, module);

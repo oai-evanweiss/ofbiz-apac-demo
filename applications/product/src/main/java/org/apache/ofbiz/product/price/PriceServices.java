@@ -584,10 +584,9 @@ public class PriceServices {
 
         // okay, now we have the calculated price, see if we should add in tax and if so do it
         if ("Y".equals(checkIncludeVat) && productStore != null && "Y".equals(productStore.getString("showPricesWithVatTax"))) {
-            BigDecimal roundedBase = ((BigDecimal) result.get("price")).setScale(taxFinalScale, taxRounding);
             Map<String, Object> calcTaxForDisplayContext = UtilMisc.toMap("productStoreId", productStore.get("productStoreId"),
                     "productId", productId, "quantity", quantity,
-                    "basePrice", roundedBase);
+                    "basePrice", (BigDecimal) result.get("price"));
             if (UtilValidate.isNotEmpty(partyId)) {
                 calcTaxForDisplayContext.put("billToPartyId", partyId);
             }

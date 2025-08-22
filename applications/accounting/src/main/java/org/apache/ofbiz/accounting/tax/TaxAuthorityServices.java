@@ -20,7 +20,6 @@ package org.apache.ofbiz.accounting.tax;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilDateTime;
@@ -63,18 +61,6 @@ public class TaxAuthorityServices {
     public static int salestaxCalcDecimals = UtilNumber.getBigDecimalScale("salestax.calc.decimals");
     public static int salestaxRounding = UtilNumber.getBigDecimalRoundingMode("salestax.rounding");
     public static final String resource = "AccountingUiLabels";
-
-    private static final long TAX_RATE_CACHE_TTL_MS = 5 * 60 * 1000L;
-    private static final Map<String, CachedRate> TAX_RATE_CACHE = new ConcurrentHashMap<>();
-
-    private static class CachedRate {
-        final GenericValue value;
-        final long expireAt;
-        private CachedRate(GenericValue value, long expireAt) {
-            this.value = value;
-            this.expireAt = expireAt;
-        }
-    }
 
     public static Map<String, Object> rateProductTaxCalcForDisplay(DispatchContext dctx, Map<String, ? extends Object> context) {
         Delegator delegator = dctx.getDelegator();
@@ -317,8 +303,6 @@ public class TaxAuthorityServices {
 
         try {
             EntityCondition productCategoryCond = null;
-            Set<String> productCategoryIdSet = new HashSet<String>();
-            String firstProductCategoryId = null;
             if (product != null) {
                 // find the tax categories associated with the product and filter by those, with an IN clause or some such
                 // if this product is variant, find the virtual product id and consider also the categories of the virtual
@@ -327,6 +311,7 @@ public class TaxAuthorityServices {
                 if ("Y".equals(product.getString("isVariant"))) {
                     virtualProductId = ProductWorker.getVariantVirtualId(product);
                 }
+                Set<String> productCategoryIdSet = new HashSet<String>();
                 EntityCondition productIdCond = null;
                 if (virtualProductId != null) {
                     productIdCond = EntityCondition.makeCondition(
@@ -343,10 +328,10 @@ public class TaxAuthorityServices {
                 for (GenericValue pcm : pcmList) {
                     productCategoryIdSet.add(pcm.getString("productCategoryId"));
                 }
+
                 if (productCategoryIdSet.size() == 0) {
                     productCategoryCond = EntityCondition.makeCondition("productCategoryId", EntityOperator.EQUALS, null);
                 } else {
-                    firstProductCategoryId = productCategoryIdSet.iterator().next();
                     productCategoryCond = EntityCondition.makeCondition(
                             EntityCondition.makeCondition("productCategoryId", EntityOperator.EQUALS, null),
                             EntityOperator.OR,
@@ -389,35 +374,9 @@ public class TaxAuthorityServices {
             mainExprs.add(EntityCondition.makeCondition(EntityCondition.makeCondition("minPurchase", EntityOperator.EQUALS, null), EntityOperator.OR, EntityCondition.makeCondition("minPurchase", EntityOperator.LESS_THAN_EQUAL_TO, itemAmount)));
             EntityCondition mainCondition = EntityCondition.makeCondition(mainExprs, EntityOperator.AND);
 
-            String cacheKey = null;
-            if (!taxAuthoritySet.isEmpty()) {
-                GenericValue auth = taxAuthoritySet.iterator().next();
-                cacheKey = auth.getString("taxAuthGeoId") + "|" + auth.getString("taxAuthPartyId") + "|" + String.valueOf(firstProductCategoryId);
-            }
-
-            List<GenericValue> lookupList = null;
-            if (cacheKey != null) {
-                CachedRate cached = TAX_RATE_CACHE.get(cacheKey);
-                if (cached != null && cached.expireAt > System.currentTimeMillis()) {
-                    lookupList = UtilMisc.toList(cached.value);
-                }
-            }
-            if (lookupList == null) {
-                LocalDateTime nowLdt = LocalDateTime.now();
-                Timestamp nowTs = Timestamp.valueOf(nowLdt);
-                EntityCondition dateCond = EntityCondition.makeCondition("fromDate", EntityOperator.LESS_THAN_EQUAL_TO, nowTs);
-                EntityCondition finalCond = EntityCondition.makeCondition(mainCondition, EntityOperator.AND, dateCond);
-                GenericValue rateValue = EntityQuery.use(delegator).from("TaxAuthorityRateProduct")
-                        .where(finalCond).orderBy("fromDate").queryFirst();
-                if (rateValue != null) {
-                    lookupList = UtilMisc.toList(rateValue);
-                    if (cacheKey != null) {
-                        TAX_RATE_CACHE.put(cacheKey, new CachedRate(rateValue, System.currentTimeMillis() + TAX_RATE_CACHE_TTL_MS));
-                    }
-                } else {
-                    lookupList = new LinkedList<GenericValue>();
-                }
-            }
+            // finally ready... do the rate query
+            List<GenericValue> lookupList = EntityQuery.use(delegator).from("TaxAuthorityRateProduct")
+                    .where(mainCondition).orderBy("minItemPrice", "minPurchase", "fromDate").filterByDate().queryList();
 
             if (lookupList.size() == 0) {
                 Debug.logWarning("In TaxAuthority Product Rate no records were found for condition:" + mainCondition.toString(), module);
@@ -507,13 +466,6 @@ public class TaxAuthorityServices {
                     taxAdjValue.set("amountAlreadyIncluded", taxAmountIncludedInFullPrice);
                     taxAdjValue.set("amount", BigDecimal.ZERO);
                 } else {
-                    BigDecimal roundedTaxable = taxable;
-                    if (itemPrice != null && itemQuantity != null) {
-                        BigDecimal roundedItemPrice = itemPrice.setScale(salestaxFinalDecimals, salestaxRounding);
-                        roundedTaxable = roundedTaxable.subtract(itemAmount).add(roundedItemPrice.multiply(itemQuantity));
-                    }
-                    taxAmount = (roundedTaxable.multiply(taxRate)).divide(PERCENT_SCALE, salestaxCalcDecimals, salestaxRounding)
-                            .setScale(salestaxFinalDecimals, salestaxRounding);
                     taxAdjValue.set("amount", taxAmount);
                 }
                 
