@@ -23,19 +23,22 @@ def iterateOverActiveComponents(applyFunction) {
 
     def rootComponents = new XmlParser().parse("${rootDir}/framework/base/config/component-load.xml")
     rootComponents.children().each { rootComponent ->
-        File componentLoadFile = file "${rootDir}/"+ rootComponent.@"parent-directory" + "/component-load.xml"
+        File parentDir = file(rootComponent.@"parent-directory")
+        if (parentDir.exists()) {
+            File componentLoadFile = new File(parentDir, "component-load.xml")
 
-        if(componentLoadFile.exists()) {
-            // iterate through the components defined in component-load.xml
-            def parsedComponents = new XmlParser().parse(componentLoadFile.toString())
-            parsedComponents.children().each { component ->
-                def componentLocation = file "${rootDir}/"+ rootComponent.@"parent-directory" + '/' + component.@"component-location"
-                applyIfEnabled(componentLocation, applyFunction)
-            }
-        } else {
-            // iterate through all components (subdirectories of the root component)
-            file(rootComponent.@"parent-directory").eachDir { componentLocation ->
-                applyIfEnabled(componentLocation, applyFunction)
+            if(componentLoadFile.exists()) {
+                // iterate through the components defined in component-load.xml
+                def parsedComponents = new XmlParser().parse(componentLoadFile.toString())
+                parsedComponents.children().each { component ->
+                    def componentLocation = file("${rootDir}/"+ rootComponent.@"parent-directory" + '/' + component.@"component-location")
+                    applyIfEnabled(componentLocation, applyFunction)
+                }
+            } else {
+                // iterate through all components (subdirectories of the root component)
+                parentDir.eachDir { componentLocation ->
+                    applyIfEnabled(componentLocation, applyFunction)
+                }
             }
         }
     }
