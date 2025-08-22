@@ -19,6 +19,7 @@
 package org.apache.ofbiz.accounting.tax;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.ofbiz.base.util.Debug;
@@ -150,6 +152,19 @@ public class TaxAuthorityServices {
         BigDecimal orderPromotionsAmount = (BigDecimal) context.get("orderPromotionsAmount");
         GenericValue shippingAddress = (GenericValue) context.get("shippingAddress");
         Locale locale = (Locale) context.get("locale");
+        BigDecimal amount = (BigDecimal) context.get("amount");
+        BigDecimal taxPercentage = (BigDecimal) context.get("taxPercentage");
+        if (itemProductList == null && amount != null && taxPercentage != null) {
+            String taxAuthGeoId = Objects.toString(context.get("taxAuthGeoId"), null);
+            Boolean taxInPrice = (Boolean) context.get("taxInPrice");
+            boolean inclusive = TaxPreferences.isTaxIncludedForGeo(taxAuthGeoId, taxInPrice);
+            BigDecimal tax = amount.multiply(taxPercentage);
+            tax = tax.setScale(0, RoundingMode.HALF_UP);
+            Map<String, Object> result = ServiceUtil.returnSuccess();
+            result.put("taxAmount", tax);
+            result.put("taxInPrice", inclusive);
+            return result;
+        }
         GenericValue productStore = null;
         GenericValue facility = null;
         try {
