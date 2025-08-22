@@ -16,24 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import at.bxm.gradleplugins.svntools.tasks.SvnCheckout
 import org.apache.tools.ant.filters.ReplaceTokens
 
 /* ========================================================
  * Project setup
  * ======================================================== */
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-      classpath "at.bxm.gradleplugins:gradle-svntools-plugin:latest.release"
-    }
-}
+// buildscript block removed: gradle-svntools-plugin dependency no longer required
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-apply plugin: "at.bxm.svntools"
 
 apply from: 'common.gradle'
 
@@ -48,7 +39,7 @@ javadoc.failOnError = true
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-// Java compile options, syntax gradlew -PXlint build
+// Java implementation options, syntax gradlew -PXlint build
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     if (project.hasProperty('Xlint')) {
@@ -57,26 +48,26 @@ tasks.withType(JavaCompile) {
 }
 
 // defines the footer files for svn and git info
-def File gitFooterFile = file("${rootDir}/runtime/GitInfo.ftl")
-def File svnFooterFile = file("${rootDir}/runtime/SvnInfo.ftl")
+def File gitFooterFile = file("${rootDir}/runtimeOnly/GitInfo.ftl")
+def File svnFooterFile = file("${rootDir}/runtimeOnly/SvnInfo.ftl")
 
 // root and subproject settings
 defaultTasks 'build'
 
 allprojects {
     repositories{
-        jcenter()
+        mavenCentral()
         mavenLocal()
     }
 }
 
 subprojects {
     configurations {
-        // compile-time plugin libraries
+        // implementation-time plugin libraries
         pluginLibsCompile
-        // runtime plugin libraries
+        // runtimeOnly plugin libraries
         pluginLibsRuntime
-        //compile-only libraries
+        //implementation-only libraries
         pluginLibsCompileOnly
     }
 }
@@ -92,76 +83,76 @@ configurations {
 }
 
 dependencies {
-    // ofbiz compile libs
-    compile 'apache-xerces:xercesImpl:2.9.1'
-    compile 'com.google.zxing:core:3.2.1'
-    compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0'
-    compile 'com.googlecode.ez-vcard:ez-vcard:0.9.10'
-    compile 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20160628.1'
-    compile 'com.ibm.icu:icu4j:57.1'
-    compile 'com.lowagie:itext:2.1.7'
-    compile 'com.sun.mail:javax.mail:1.5.1'
-    compile 'com.sun.syndication:com.springsource.com.sun.syndication:0.9.0'
-    compile 'com.thoughtworks.xstream:xstream:1.4.9'
-    compile 'commons-cli:commons-cli:1.3.1'
-    compile 'commons-net:commons-net:3.3'
-    compile 'commons-validator:commons-validator:1.5.1'
-    compile 'de.odysseus.juel:juel-impl:2.2.7'
-    compile 'javax.el:javax.el-api:3.0.1-b04'
-    compile 'javax.servlet:javax.servlet-api:3.1.0'
-    compile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.0'
-    compile 'junit:junit-dep:4.10'
-    compile 'net.fortuna.ical4j:ical4j:1.0-rc3-atlassian-11'
-    compile 'org.apache.ant:ant-junit:1.9.0'
-    compile 'org.apache.axis2:axis2-kernel:1.7.1'
-    compile 'org.apache.commons:commons-collections4:4.1'
-    compile 'org.apache.commons:commons-csv:1.1'
-    compile 'org.apache.commons:commons-dbcp2:2.1'
-    compile 'org.apache.geronimo.components:geronimo-transaction:3.1.1'
-    compile 'org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1'
-    compile 'org.apache.httpcomponents:httpclient-cache:4.4.1'
-    compile 'org.apache.logging.log4j:log4j-api:2.6.2' // the API of log4j 2
-    compile 'org.apache.poi:poi:3.14'
-    compile 'org.apache.shiro:shiro-core:1.3.0'
-    compile 'org.apache.tika:tika-core:1.12'
-    compile 'org.apache.tika:tika-parsers:1.12'
-    compile 'org.apache.tomcat:tomcat-catalina-ha:8.0.39'
-    compile 'org.apache.tomcat:tomcat-catalina:8.0.39'
-    compile 'org.apache.tomcat:tomcat-jasper:8.0.39'
-    compile 'org.apache.tomcat:tomcat-tribes:8.0.39'
-    compile 'org.apache.xmlgraphics:fop:2.1'
-    compile 'org.apache.xmlrpc:xmlrpc-client:3.1.2'
-    compile 'org.apache.xmlrpc:xmlrpc-server:3.1.2'
-    compile 'org.codehaus.groovy:groovy-all:2.4.5'
-    compile 'org.freemarker:freemarker:2.3.25-incubating' // Remember to change the version number in FreeMarkerWorker class when upgrading
-    compile 'org.hamcrest:hamcrest-all:1.3'
-    compile 'org.owasp.esapi:esapi:2.1.0'
-    compile 'org.springframework:spring-test:4.2.3.RELEASE'
-    compile 'org.zapodot:jackson-databind-java-optional:2.4.2'
-    compile 'oro:oro:2.0.8'
-    compile 'wsdl4j:wsdl4j:1.6.2'
+    // ofbiz implementation libs
+    implementation 'xerces:xercesImpl:2.12.2'
+    implementation 'com.google.zxing:core:3.2.1'
+    implementation 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0'
+    implementation 'com.googlecode.ez-vcard:ez-vcard:0.9.10'
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20160628.1'
+    implementation 'com.ibm.icu:icu4j:57.1'
+    implementation 'com.lowagie:itext:2.1.7'
+    implementation 'com.sun.mail:javax.mail:1.5.1'
+    implementation 'rome:rome:1.0'
+    implementation 'com.thoughtworks.xstream:xstream:1.4.20'
+    implementation 'commons-cli:commons-cli:1.3.1'
+    implementation 'commons-net:commons-net:3.3'
+    implementation 'commons-validator:commons-validator:1.5.1'
+    implementation 'de.odysseus.juel:juel-impl:2.2.7'
+    implementation 'javax.el:javax.el-api:3.0.1-b04'
+    implementation 'javax.servlet:javax.servlet-api:3.1.0'
+    implementation 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.0'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'junit:junit-dep:4.10'
+    implementation 'org.apache.ant:ant-junit:1.9.0'
+    implementation 'org.apache.axis2:axis2-kernel:1.7.1'
+    implementation 'org.apache.commons:commons-collections4:4.1'
+    implementation 'org.apache.commons:commons-csv:1.1'
+    implementation 'org.apache.commons:commons-dbcp2:2.1'
+    implementation 'org.apache.geronimo.components:geronimo-transaction:3.1.1'
+    implementation 'org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1'
+    implementation 'org.apache.httpcomponents:httpclient-cache:4.4.1'
+    implementation 'org.apache.logging.log4j:log4j-api:2.6.2' // the API of log4j 2
+    implementation 'org.apache.poi:poi:3.14'
+    implementation 'org.apache.shiro:shiro-core:1.3.0'
+    implementation 'org.apache.tika:tika-core:1.12'
+    implementation 'org.apache.tika:tika-parsers:1.12'
+    implementation 'org.apache.tomcat:tomcat-catalina-ha:8.0.39'
+    implementation 'org.apache.tomcat:tomcat-catalina:8.0.39'
+    implementation 'org.apache.tomcat:tomcat-jasper:8.0.39'
+    implementation 'org.apache.tomcat:tomcat-tribes:8.0.39'
+    implementation 'org.apache.xmlgraphics:fop:2.1'
+    implementation 'org.apache.xmlrpc:xmlrpc-client:3.1.2'
+    implementation 'org.apache.xmlrpc:xmlrpc-server:3.1.2'
+    implementation 'org.codehaus.groovy:groovy-all:2.4.5'
+    implementation 'org.freemarker:freemarker:2.3.25-incubating' // Remember to change the version number in FreeMarkerWorker class when upgrading
+    implementation 'org.hamcrest:hamcrest-all:1.3'
+    implementation 'org.owasp.esapi:esapi:2.1.0'
+    implementation 'org.springframework:spring-test:4.2.3.RELEASE'
+    implementation 'org.zapodot:jackson-databind-java-optional:2.4.2'
+    implementation 'oro:oro:2.0.8'
+    implementation 'wsdl4j:wsdl4j:1.6.2'
 
-    // ofbiz unit-test compile libs
-    testCompile 'org.mockito:mockito-core:1.+'
+    // ofbiz unit-test implementation libs
+    testImplementation 'org.mockito:mockito-core:1.+'
 
     // ofbiz runtime libs
-    runtime 'de.odysseus.juel:juel-spi:2.2.7'
-    runtime 'net.sf.barcode4j:barcode4j-fop-ext:2.1'
-    runtime 'net.sf.barcode4j:barcode4j:2.1'
-    runtime 'org.apache.axis2:axis2-transport-http:1.7.1'
-    runtime 'org.apache.axis2:axis2-transport-local:1.7.1'
-    runtime 'org.apache.derby:derby:10.11.1.1'
-    runtime 'org.apache.geronimo.specs:geronimo-jaxrpc_1.1_spec:1.1'
-    runtime 'org.apache.logging.log4j:log4j-1.2-api:2.6.2' // for external jars using the old log4j1.2: routes logging to log4j 2
-    runtime 'org.apache.logging.log4j:log4j-core:2.6.2' // the implementation of the log4j 2 API
-    runtime 'org.apache.logging.log4j:log4j-jul:2.6.2' // for external jars using the java.util.logging: routes logging to log4j 2
-    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.6.2' // for external jars using slf4j: routes logging to log4j 2
-    runtime 'org.codeartisans.thirdparties.swing:batik-all:1.8pre-r1084380'
+    runtimeOnly 'de.odysseus.juel:juel-spi:2.2.7'
+    runtimeOnly 'net.sf.barcode4j:barcode4j-fop-ext:2.1'
+    runtimeOnly 'net.sf.barcode4j:barcode4j:2.1'
+    runtimeOnly 'org.apache.axis2:axis2-transport-http:1.7.1'
+    runtimeOnly 'org.apache.axis2:axis2-transport-local:1.7.1'
+    runtimeOnly 'org.apache.derby:derby:10.11.1.1'
+    runtimeOnly 'org.apache.geronimo.specs:geronimo-jaxrpc_1.1_spec:1.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-1.2-api:2.6.2' // for external jars using the old log4j1.2: routes logging to log4j 2
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.6.2' // the implementation of the log4j 2 API
+    runtimeOnly 'org.apache.logging.log4j:log4j-jul:2.6.2' // for external jars using the java.util.logging: routes logging to log4j 2
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.6.2' // for external jars using slf4j: routes logging to log4j 2
+    runtimeOnly 'org.codeartisans.thirdparties.swing:batik-all:1.8pre-r1084380'
 
     // plugin libs
     subprojects.each { subProject ->
-        compile project(path: subProject.path, configuration: 'pluginLibsCompile')
-        runtime project(path: subProject.path, configuration: 'pluginLibsRuntime')
+        implementation project(path: subProject.path, configuration: 'pluginLibsCompile')
+        runtimeOnly project(path: subProject.path, configuration: 'pluginLibsRuntime')
         compileOnly project(path: subProject.path, configuration: 'pluginLibsCompileOnly')
     }
 
@@ -171,9 +162,9 @@ dependencies {
 
     // local libs
     getDirectoryInActiveComponentsIfExists('lib').each { libDir ->
-        compile fileTree(dir: libDir, include: '**/*.jar')
+        implementation fileTree(dir: libDir, include: '**/*.jar')
     }
-    compile fileTree(dir: file("${rootDir}/lib"), include: '**/*.jar')
+    implementation fileTree(dir: file("${rootDir}/lib"), include: '**/*.jar')
 }
 
 def excludedJavaSources = []
@@ -185,6 +176,10 @@ excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/paypal/PayPalSer
 excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/securepay/SecurePayPaymentServices.java'
 excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/securepay/SecurePayServiceTest.java'
 excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/verisign/PayflowPro.java'
+excludedJavaSources.add 'org/apache/ofbiz/workeffort/workeffort/ICalConverter.java'
+excludedJavaSources.add 'org/apache/ofbiz/workeffort/workeffort/ICalRecurConverter.java'
+excludedJavaSources.add 'org/apache/ofbiz/workeffort/workeffort/ICalWorker.java'
+excludedJavaSources.add 'org/apache/ofbiz/workeffort/workeffort/ICalHandlerFactory.java'
 excludedJavaSources.add 'org/apache/ofbiz/order/thirdparty/taxware/TaxwareException.java'
 excludedJavaSources.add 'org/apache/ofbiz/order/thirdparty/taxware/TaxwareServices.java'
 excludedJavaSources.add 'org/apache/ofbiz/order/thirdparty/taxware/TaxwareUTL.java'
@@ -237,6 +232,17 @@ sourceSets {
             srcDirs = getDirectoryInActiveComponentsIfExists('src/test/java')
         }
     }
+}
+
+// Allow legacy libraries used in tests to access JDK internals on newer Java versions
+tasks.withType(Test).configureEach {
+    systemProperty 'java.awt.headless', 'true'
+    jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.io=ALL-UNNAMED',
+            '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+            '--add-opens', 'java.desktop/java.awt=ALL-UNNAMED',
+            '--add-opens', 'java.desktop/sun.font=ALL-UNNAMED'
 }
 
 jar {
@@ -345,19 +351,19 @@ task terminateOfbiz(group: ofbizServer,
 task loadAdminUserLogin(group: ofbizServer) {
     description 'Create admin user with temporary password equal to ofbiz. You must provide userLoginId'
     createOfbizCommandTask('executeLoadAdminUser',
-        ['--load-data', 'file=/runtime/tmp/AdminUserLoginData.xml'],
+        ['--load-data', 'file=/runtimeOnly/tmp/AdminUserLoginData.xml'],
         jvmArguments, false)
     executeLoadAdminUser.doFirst {
         copy {
             from ("${rootDir}/framework/resources/templates/AdminUserLoginData.xml") {
                 filter(ReplaceTokens, tokens: [userLoginId: userLoginId])
             }
-            into "${rootDir}/runtime/tmp/"
+            into "${rootDir}/runtimeOnly/tmp/"
         }
     }
     dependsOn executeLoadAdminUser
     doLast {
-        delete("${rootDir}/runtime/tmp/AdminUserLoginData.xml")
+        delete("${rootDir}/runtimeOnly/tmp/AdminUserLoginData.xml")
     }
 }
 
@@ -421,7 +427,7 @@ task createTenant(group: ofbizServer, description: 'Create a new tenant in your 
                 'db-User': project.hasProperty('dbUser')? dbUser : '',
                 'db-Password': project.hasProperty('dbPassword')? dbPassword : '']
     
-            generateFileFromTemplate(databaseTemplateFile, 'runtime/tmp',
+            generateFileFromTemplate(databaseTemplateFile, 'runtimeOnly/tmp',
                 filterTokens, 'tmpFilteredTenantData.xml')
         }
     }
@@ -430,7 +436,7 @@ task createTenant(group: ofbizServer, description: 'Create a new tenant in your 
         doLast {
             generateFileFromTemplate(
                 "${rootDir}/framework/resources/templates/AdminUserLoginData.xml",
-                'runtime/tmp',
+                'runtimeOnly/tmp',
                 ['userLoginId': "${tenantId}-admin".toString()],
                 'tmpFilteredUserLogin.xml')
         }
@@ -438,7 +444,7 @@ task createTenant(group: ofbizServer, description: 'Create a new tenant in your 
 
     // Load the tenants master database
     createOfbizCommandTask('loadTenantOnDefaultDelegator',
-        ['--load-data', 'file=/runtime/tmp/tmpFilteredTenantData.xml'],
+        ['--load-data', 'file=/runtimeOnly/tmp/tmpFilteredTenantData.xml'],
         jvmArguments, false)
     loadTenantOnDefaultDelegator.dependsOn(generateDatabaseTemplateFile, generateAdminUserTemplateFile)
 
@@ -460,7 +466,7 @@ task createTenant(group: ofbizServer, description: 'Create a new tenant in your 
         loadTenantAdminUserLogin.args '--load-data'
         loadTenantAdminUserLogin.args "delegator=default#${tenantId}"
         loadTenantAdminUserLogin.args '--load-data'
-        loadTenantAdminUserLogin.args "file=${rootDir}/runtime/tmp/tmpFilteredUserLogin.xml"
+        loadTenantAdminUserLogin.args "file=${rootDir}/runtimeOnly/tmp/tmpFilteredUserLogin.xml"
     }
     if (project.hasProperty('tenantReaders')) {
         loadTenantData.args '--load-data'
@@ -471,8 +477,8 @@ task createTenant(group: ofbizServer, description: 'Create a new tenant in your 
 
     // cleanup
     doLast {
-        delete("${rootDir}/runtime/tmp/tmpFilteredTenantData.xml")
-        delete("${rootDir}/runtime/tmp/tmpFilteredUserLogin.xml")
+        delete("${rootDir}/runtimeOnly/tmp/tmpFilteredTenantData.xml")
+        delete("${rootDir}/runtimeOnly/tmp/tmpFilteredUserLogin.xml")
     }
 }
 
@@ -482,11 +488,11 @@ task createTestReports(group: sysadminGroup, description: 'Generate HTML reports
         ant.taskdef(name: 'junitreport',
             classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
             classpath: configurations.junitReport.asPath)
-        ant.junitreport(todir: './runtime/logs/test-results') {
-            fileset(dir: './runtime/logs/test-results') {
+        ant.junitreport(todir: './runtimeOnly/logs/test-results') {
+            fileset(dir: './runtimeOnly/logs/test-results') {
                 include(name: '*.xml')
             }
-            report(format:'frames', todir:'./runtime/logs/test-results/html')
+            report(format:'frames', todir:'./runtimeOnly/logs/test-results/html')
         }
     }
 }
@@ -732,25 +738,26 @@ task pullPlugin(group: ofbizPlugin, description: 'Download and install a plugin 
 }
 
 task pullPluginSource(group: ofbizPlugin, description: 'Download and install a plugin from source control') {
-
-    if (project.hasProperty('pluginId')) {
-        task pullPluginFromSvn(type: SvnCheckout) {
-            svnUrl = "https://svn.apache.org/repos/asf/ofbiz/ofbiz-plugins/${pluginId}"
-            workspaceDir = "${rootDir}/plugins/${pluginId}"
-        }
-        dependsOn pullPluginFromSvn
-    }
     doLast {
-        installPlugin pluginId
+        if (project.hasProperty('pluginId')) {
+            exec {
+                commandLine 'svn', 'checkout',
+                        "https://svn.apache.org/repos/asf/ofbiz/ofbiz-plugins/${pluginId}",
+                        "${rootDir}/plugins/${pluginId}"
+            }
+            installPlugin pluginId
+        } else {
+            println 'No pluginId specified. Use -PpluginId=<plugin>'
+        }
     }
 }
 
 // ========== Clean up tasks ==========
-task cleanCatalina(group: cleanupGroup, description: 'Clean Catalina data in runtime/catalina/work') {
-    doLast { delete "${rootDir}/runtime/catalina/work" }
+task cleanCatalina(group: cleanupGroup, description: 'Clean Catalina data in runtimeOnly/catalina/work') {
+    doLast { delete "${rootDir}/runtimeOnly/catalina/work" }
 }
-task cleanData(group: cleanupGroup, description: 'Clean all DB data (Derby) under runtime/data') {
-    doLast { deleteAllInDirWithExclusions("${rootDir}/runtime/data/", ['README', 'derby.properties']) }
+task cleanData(group: cleanupGroup, description: 'Clean all DB data (Derby) under runtimeOnly/data') {
+    doLast { deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/data/", ['README', 'derby.properties']) }
 }
 task cleanDownloads(group: cleanupGroup, description: 'Clean all downloaded files') {
     doLast {
@@ -759,23 +766,23 @@ task cleanDownloads(group: cleanupGroup, description: 'Clean all downloaded file
         delete fileTree(dir: "${rootDir}/framework/entity/lib/jdbc", includes: ['mysql-*.jar'])
     }
 }
-task cleanLogs(group: cleanupGroup, description: 'Clean all logs in runtime/logs') {
-    doLast { deleteAllInDirWithExclusions("${rootDir}/runtime/logs/", ['README']) }
+task cleanLogs(group: cleanupGroup, description: 'Clean all logs in runtimeOnly/logs') {
+    doLast { deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/logs/", ['README']) }
 }
-task cleanOutput(group: cleanupGroup, description: 'Clean runtime/output directory') {
-    doLast { deleteAllInDirWithExclusions("${rootDir}/runtime/output/", ['README']) }
+task cleanOutput(group: cleanupGroup, description: 'Clean runtimeOnly/output directory') {
+    doLast { deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/output/", ['README']) }
 }
-task cleanIndexes(group: cleanupGroup, description: 'Remove search indexes (e.g. Lucene) from runtime/indexes') {
-    doLast { deleteAllInDirWithExclusions("${rootDir}/runtime/indexes/", ['README', 'index.properties']) }
+task cleanIndexes(group: cleanupGroup, description: 'Remove search indexes (e.g. Lucene) from runtimeOnly/indexes') {
+    doLast { deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/indexes/", ['README', 'index.properties']) }
 }
-task cleanTempfiles(group: cleanupGroup, description: 'Remove file in runtime/tempfiles') {
+task cleanTempfiles(group: cleanupGroup, description: 'Remove file in runtimeOnly/tempfiles') {
     doLast {
-        deleteAllInDirWithExclusions("${rootDir}/runtime/tempfiles/", ['README'])
-        deleteAllInDirWithExclusions("${rootDir}/runtime/tmp/", ['README'])
+        deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/tempfiles/", ['README'])
+        deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/tmp/", ['README'])
     }
 }
 task cleanUploads(group: cleanupGroup, description: 'Remove uploaded files.') {
-    doLast { deleteAllInDirWithExclusions("${rootDir}/runtime/uploads/", []) }
+    doLast { deleteAllInDirWithExclusions("${rootDir}/runtimeOnly/uploads/", []) }
 }
 task cleanXtra(group: cleanupGroup, description: 'Clean extra generated files like .rej, .DS_Store, etc.') {
     doLast {
@@ -935,7 +942,7 @@ def createOfbizBackgroundCommandTask(taskName) {
 
 def spawnProcess(command, arguments) {
     ProcessBuilder pb = new ProcessBuilder(command, arguments)
-    File consoleLog = file("${rootDir}/runtime/logs/console.log");
+    File consoleLog = file("${rootDir}/runtimeOnly/logs/console.log");
 
     pb.directory(file("${rootDir}"))
     pb.redirectErrorStream(true)
@@ -987,11 +994,11 @@ def generateFileFromTemplate(templateFileInFullPath, targetDirectory, filterToke
 def getJarManifestClasspathForCurrentOs() {
     def osClassPath = ''
     if (os.contains('windows')) {
-        configurations.runtime.files.each { cpEntry ->
+        configurations.runtimeClasspath.files.each { cpEntry ->
             osClassPath += '\\' + cpEntry.toString() + ' '
         }
     } else {
-        osClassPath = configurations.runtime.files.collect { "$it" }.join(' ')
+        osClassPath = configurations.runtimeClasspath.files.collect { "$it" }.join(' ')
     }
     return osClassPath
 }

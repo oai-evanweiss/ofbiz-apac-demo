@@ -32,7 +32,7 @@ import org.apache.ofbiz.base.start.StartupLoader;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilValidate;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collections;
 
 /**
  * An object that loads containers (background processes).
