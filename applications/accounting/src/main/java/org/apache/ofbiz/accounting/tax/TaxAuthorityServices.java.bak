@@ -127,30 +127,6 @@ public class TaxAuthorityServices {
         // round to 2 decimal places for display/etc
         taxTotal = taxTotal.setScale(salestaxFinalDecimals, salestaxRounding);
         priceWithTax = priceWithTax.setScale(salestaxFinalDecimals, salestaxRounding);
-        try {
-            String __geo = (String) context.get("taxAuthGeoId");
-            Boolean __tip = (Boolean) context.get("taxInPrice");
-            boolean __inclusive = org.apache.ofbiz.accounting.tax.TaxPreferences.isTaxIncludedForGeo(__geo, __tip);
-            java.math.BigDecimal __rate = null;
-            try { __rate = (java.math.BigDecimal) context.get("taxPercentage"); } catch (Throwable __e) {}
-            if (__rate == null) { try { __rate = taxPercentage; } catch (Throwable __e) {} }
-            java.math.BigDecimal __amount = java.math.BigDecimal.ZERO;
-            try {
-                java.util.List<java.math.BigDecimal> __list = (java.util.List<java.math.BigDecimal>) context.get("itemAmountList");
-                if (__list != null) for (java.math.BigDecimal a : __list) if (a != null) __amount = __amount.add(a);
-            } catch (Throwable __e) {}
-            if (__amount.compareTo(java.math.BigDecimal.ZERO) == 0) {
-                try { java.math.BigDecimal a = (java.math.BigDecimal) context.get("amount"); if (a != null) __amount = a; } catch (Throwable __e) {}
-            }
-            if (__inclusive && __rate != null) {
-                java.math.BigDecimal __tax = __amount.multiply(__rate);
-                try { __tax = __tax.setScale(salestaxFinalDecimals, salestaxRounding); }
-                catch (Throwable __e) { __tax = __tax.setScale(0, java.math.RoundingMode.HALF_UP); }
-                try { taxTotal = __tax; } catch (Throwable __e) {}
-                try { priceWithTax = priceWithTax.add(__tax); } catch (Throwable __e) {}
-            }
-        } catch (Throwable __ignore) {}
-
 
         Map<String, Object> result = ServiceUtil.returnSuccess();
         result.put("taxTotal", taxTotal);
