@@ -1,169 +1,82 @@
 # AGENTS.md
 
-Think of this file as a *README for agents*. It tells you how to build,
-test, and validate fixes in this repo, plus the exact commands we expect
-you to run.
+This file explains how to build and test code in this repo.
 
 ------------------------------------------------------------------------
 
-## Project at a glance
+## Build & Environment
 
--   Monorepo-style Gradle build (single root project; many components
-    under `applications/`, `framework/`, etc.)
--   Java 8 source/target compatibility (build runs fine on newer JVMs)
--   Tests are launched **from the root** (there is **no**
-    `:applications:accounting:test` task)
-
-Directory highlights: - `applications/accounting/src/main/java/...` ---
-tax calculation code (e.g., `TaxAuthorityServices.java`, helpers) -
-`applications/product/minilang/.../PriceServices.xml` --- price display
-logic (minilang) - `applications/accounting/src/test/java/...` --- JUnit
-tests you add for fast validation
+-   This is a **Gradle Java project** (monorepo style).
+-   Run commands from the **repo root**.
+-   Java compatibility: source/target 1.8 (compiles fine on newer JDKs).
 
 ------------------------------------------------------------------------
 
-## Setup
+## Common Commands
 
 ``` bash
-# from repo root
-./gradlew --version        # sanity check Gradle/JDK
-./gradlew clean build      # compile everything
-```
+# Clean & build everything
+./gradlew clean build
 
-If you need Java, use the system JDK (project sets
-`sourceCompatibility = '1.8'`).
-
-------------------------------------------------------------------------
-
-## How to run tests (the right way)
-
-> ✅ Always run tests from the **repo root**.
-
-``` bash
-# run all tests
+# Run all tests
 ./gradlew test
 
-# re-run tests verbosely for a single class
-./gradlew test --tests 'org.apache.ofbiz.accounting.tax.TaxPreferencesTest' --rerun-tasks --info
+# Run a specific test class
+./gradlew test --tests 'org.apache.ofbiz.accounting.tax.SomeTest' --rerun-tasks --info
+
+# See available tasks
+./gradlew tasks
 ```
 
-**Do NOT** run `:applications:accounting:test` --- that task does not
-exist here.
+❌ Do **not** run subproject tasks like `:applications:accounting:test`
+--- those don't exist.\
+✅ Always run tests from the root.
 
 ------------------------------------------------------------------------
 
-## Fast validation checklist (before making a PR)
+## Tests
 
-1)  **Build & unit tests**
+-   JUnit 4 is supported.
 
-``` bash
-./gradlew clean test
-```
+-   Place new tests under:
 
-Expect `BUILD SUCCESSFUL`. If you added a test, verify the XML/HTML
-reports under: - `build/test-results/test/TEST-*.xml` -
-`build/reports/tests/test/index.html`
+        applications/<component>/src/test/java/...
 
-2)  **Targeted smoke checks (shell)** Use `rg` (ripgrep) to confirm you
-    removed obvious regressions:
+-   Use `./gradlew test` to execute them.\
 
--   Hard-coded tax rate not present:
+-   Test results:
 
-``` bash
-rg -n '0\.25' applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
-rg -n 'set field="parameters\.taxPercentage" value="0\.25"' applications/product/minilang/product/PriceServices.xml
-```
-
--   Tax-inclusive flag checks are correct:
-
-``` bash
-rg -n '"taxInPrice"' applications/accounting/src/main/java/org/apache/ofbiz/accounting/tax/TaxAuthorityServices.java
-rg -n 'parameters\.taxInPrice' applications/product/minilang/product/price/PriceServices.xml
-# Expect inclusive paths to use "Y" (not "N") where appropriate
-```
-
-3)  **Minimal business test (logic sanity)** For a JP item priced
-    **¥5,000** with **10%** tax:
-
--   If **tax-inclusive**: total should remain **¥5,000**; extracted tax
-    ≈ **¥455** (5000 × 0.10 / 1.10), rounded per rules.
--   If **exclusive**: tax should be **¥500**, total **¥5,500**.
-
-Automate this with a small JUnit test when you change core tax or price
-paths.
+    -   XML → `build/test-results/test/`\
+    -   HTML → `build/reports/tests/test/index.html`
 
 ------------------------------------------------------------------------
 
-## Typical agent workflows
+## Code Search
 
-### A) Investigate a "tax added on top of inclusive price" bug
-
-1.  Grep likely sources:
+Ripgrep (`rg`) is available for exploring the codebase. Examples:
 
 ``` bash
-rg -n 'taxInPrice|VAT_TAX|SALES_TAX|taxPercentage' applications/
-```
-
-2.  Inspect:
-    -   `TaxAuthorityServices.java` for inclusive vs. exclusive math
-    -   `PriceServices.xml` for minilang gates around
-        `parameters.taxInPrice`
-3.  Add/adjust a focused unit test (e.g., `TaxPreferencesTest`) to lock
-    behavior.
-4.  Run:
-
-``` bash
-./gradlew test --rerun-tasks
-```
-
-### B) Add a unit test
-
-Create under:
-
-    applications/accounting/src/test/java/org/apache/ofbiz/accounting/tax/YourTestName.java
-
-Then:
-
-``` bash
-./gradlew test --tests 'org.apache.ofbiz.accounting.tax.*' --rerun-tasks
+rg -n 'taxInPrice' applications/
+rg -n 'VAT_TAX' applications/
 ```
 
 ------------------------------------------------------------------------
 
-## Coding & PR expectations (short)
+## Guidelines
 
--   Keep changes minimal and well-scoped.
--   Include **at least one** failing test before the fix (if practical),
-    then make it pass.
--   In PR description, include:
-    -   **Problem** (1--2 lines)
-    -   **What changed**
-    -   **How you validated** (commands + test names)
-    -   **Risk** (if any)
-
-Example PR checklist: - \[ \] Built with `./gradlew clean build` - \[ \]
-Tests: `./gradlew test` (list specific tests) - \[ \] `rg` smoke checks
-(attach outputs if relevant)
+-   Keep changes minimal and scoped.
+-   When adding a fix, also add a test that would fail without it.
+-   Use text-based assertions in tests if you only need to validate
+    configuration or XML content.
+-   Avoid relying on OFBiz runtime bootstrap (`component://`,
+    `SimpleMethod.runSimpleService`, `OFBizTestCase`) in plain JUnit
+    tests; these require full environment setup.
 
 ------------------------------------------------------------------------
 
-## Common pitfalls
+## PR Checklist
 
--   Running subproject tasks like `:applications:accounting:test` → not
-    defined here. Use root `./gradlew test`.
--   Fixing downstream invoice adjustments (`InvoiceServices`) when the
-    issue is upstream in **tax** or **price** services.
--   Leaving hard-coded literals (e.g., `0.25`) or inverted
-    `"taxInPrice"` gates (`"N"` vs `"Y"`).
-
-------------------------------------------------------------------------
-
-## Tools you may use
-
--   Gradle CLI (`./gradlew …`)
--   Ripgrep (`rg`) for code search
--   JUnit 4 for unit tests
-
-No external services are required to validate fixes.
-
-------------------------------------------------------------------------
+-   [ ] Build passes (`./gradlew clean build`)
+-   [ ] Tests pass (`./gradlew test`)
+-   [ ] New/updated tests included
+-   [ ] Changes are small and well-described
