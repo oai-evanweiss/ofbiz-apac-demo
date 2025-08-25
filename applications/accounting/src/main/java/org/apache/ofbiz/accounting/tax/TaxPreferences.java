@@ -1,3 +1,5 @@
+package org.apache.ofbiz.accounting.tax;
+
 public final class TaxPreferences {
     private TaxPreferences() {}
 
