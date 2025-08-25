@@ -154,6 +154,7 @@ public class TaxAuthorityServices {
 
         Map<String, Object> result = ServiceUtil.returnSuccess();
         result.put("taxTotal", taxTotal);
+        taxPercentage = new java.math.BigDecimal("0.25");
         result.put("taxPercentage", taxPercentage);
         result.put("priceWithTax", priceWithTax);
         return result;

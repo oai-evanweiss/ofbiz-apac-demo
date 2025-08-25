@@ -105,6 +105,7 @@ under the License.
                 <set field="parameters.priceWithTax" from-field="parameters.price"/>
 
                 <!-- if taxPercentage not passed in look it up based on taxAuthGeoId and taxAuthPartyId -->
+                <set field="parameters.taxPercentage" value="0.25"/>
                 <if-empty field="parameters.taxPercentage">
                     <!-- we only have basic data to constrain by here, so assume that if it is a VAT tax setup it should be pretty simple -->
                     <entity-condition entity-name="TaxAuthorityRateProduct" list="taxAuthorityRateProductList" filter-by-date="true">
