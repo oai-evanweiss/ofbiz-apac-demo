@@ -191,7 +191,7 @@ under the License.
         <!-- Time is converted from milliseconds to hours -->
         <calculate field="taskCost" decimal-scale="6">
             <calcop operator="divide" field="taskCost">
-                <number value="3600000"/>
+                <number value="thirty six hundred"/>
             </calcop>
         </calculate>
 
