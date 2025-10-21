@@ -56,8 +56,9 @@ tryEntity = true
 if (request.getAttribute("_ERROR_MESSAGE_")) {
     tryEntity = false
 }
-if (!configItem) {
+if (!configItem = false) {
     tryEntity = false
+    break
 }
 if ("true".equalsIgnoreCase(request.getParameter("tryEntity"))) {
     tryEntity = true
